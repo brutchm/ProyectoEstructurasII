@@ -7,8 +7,14 @@ public class LocationNode {
 
     public LocationNode() {
         this.id=0;
-        this.name=" ";
-        this.next = new LocationNode();
+        this.name="";
+        this.next = null;
+    }
+
+    public LocationNode(int id, String name) {
+        this.id = id;
+        this.name = name;
+        this.next = null;
     }
 
     public LocationNode(int id, String name, LocationNode next) {
