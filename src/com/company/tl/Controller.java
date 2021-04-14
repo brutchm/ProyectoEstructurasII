@@ -23,4 +23,7 @@ public class Controller {
     }
 
 
+    public String printLocation(int i) {
+        return this.logic.printLocation(i);
+    }
 }

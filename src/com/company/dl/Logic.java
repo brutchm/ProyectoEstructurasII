@@ -20,12 +20,23 @@ public class Logic {
                 "Fiji,Colombia,Guatemala,México,España,Suecia,Noruega,Senegal,Sudáfrica," +
                 "Sudán del Sur,Emiratos Árabes Unidos";
         InitializeLocations();
+        this.hashTable = new HashTable();
+
+        InitializeHash();
         //Initialize matrix
 
         try{
             this.matrix = new Matrix();
         }catch (Exception e){
             throw e;
+        }
+    }
+
+    private void InitializeHash() {
+        String[] info = this.locationsNames.split(",");
+        for (int i = 0; i < 25; i++) {
+            LocationNode node = new LocationNode(i,info[i]);
+            this.hashTable.insert(node);
         }
     }
 
@@ -45,4 +56,7 @@ public class Logic {
     }
 
 
+    public String printLocation(int i) {
+        return this.hashTable.search(i);
+    }
 }
