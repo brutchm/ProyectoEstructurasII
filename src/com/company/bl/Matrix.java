@@ -9,222 +9,160 @@ import java.util.StringTokenizer;
 
 public class Matrix {
 
-    private int[][] matrix;
-    private int nodesQuantity;
-    private List conjS;
-    private List conjCompS;
-    private List tracks;
-    private String tmp;
-    private String fileName;
+    int[][] matrix;
+    int nodesQuantity = 25;
 
-    public Matrix() throws IOException{
-        this.nodesQuantity = 25;
-        this.matrix = new int[this.nodesQuantity][this.nodesQuantity];
-        this.conjS = new ArrayList();
-        this.conjCompS = new ArrayList();
-        this.tracks = new ArrayList();
-        this.fileName = "locationCosts.txt";
+    public Matrix(){
+        matrix = new int[this.nodesQuantity][this.nodesQuantity];
         loadCostsFromFile();
     }
 
-    private void loadCostsFromFile() throws IOException{
+    public int[][] getMatrix(){
+        return this.matrix;
+    }
+
+    private void loadCostsFromFile(){
         String fileName;
-        String stringAux;
-        StringTokenizer tokenizer;
+        String a;
+        StringTokenizer d;
         int f=0;
-        int c;
+        int c=0;
 
         try{
-            fileName= this.fileName;
-            FileReader fileReaderr = new FileReader(fileName);
-            BufferedReader bufferedReader = new  BufferedReader(fileReaderr);
-            while((stringAux=bufferedReader.readLine())!=null){
-                tokenizer = new StringTokenizer(stringAux);
+            fileName= "locationCosts.txt";
+            FileReader ar = new FileReader(fileName);
+            BufferedReader b = new  BufferedReader(ar);
+            while((a=b.readLine())!=null){
+                d = new StringTokenizer(a);
                 c=0;
-                while(tokenizer.hasMoreTokens()){
-                    matrix[f][c]=Integer.valueOf(tokenizer.nextToken()).intValue();
+                while(d.hasMoreTokens()){
+                    matrix[f][c]=Integer.valueOf(d.nextToken()).intValue();
                     c++;
                 }
                 f++;
             }
         }
         catch(FileNotFoundException e){
-           throw e;
+            System.out.print("Error: "+e);
+            System.exit(0);
         }
         catch(IOException e1){
-            throw e1;
+            System.out.print("Error: "+e1);
+            System.exit(0);
         }
         catch(NumberFormatException e2){
-            throw e2;
-
+            System.out.print("Error: "+e2);
+            System.exit(0);
         }
     }
 
-    public String getMinCost(int from, int to, String locations){
-        matrix[from][from]=0;
-        return resolve(from, to, locations);
+    public String getMinCost(int from, int to, String locaciones){
+        return resolve(from, to, locaciones);
     }
 
-    private int min(int dest){
-        int min=-1;
-        int nod=0;
-        int originNode=-1;
-        int aux;
+    public String resolve(int from, int to, String locaciones){
+        int[][] matrixAux = new int[nodesQuantity][nodesQuantity];
+        int countVisitedVertex = 0;
+        int minCost = 0;
 
-        //Loop for the visited vertexes
-        for(int i=0;i<conjS.size();i++){
-            //nod=Integer.valueOf((String)(conj_S.get(i))).intValue();
-            //get the visited vertex
-            nod = (int) conjS.get(i);
+        ArrayList<Integer> queueVertex = new ArrayList<Integer>();
+        queueVertex.add(from);
+        //Iterates for every unvisited vertex added to queue
+        while (queueVertex.size() > 0 && queueVertex.get(0) != to){
+            //Get the min cost of the previous vertex
+            minCost = calculateMinCostColumVertex(matrixAux, countVisitedVertex,queueVertex.get(0));
 
-            /*
-            if there's cost from visited vertex to itself
-            AND
-            there's cost from the visited Vertex to the destiny vertex
-                -> aux = add between from visited vertex to itself AND from the visitedVertex to the destiny vertex(TOTAL COST)
-            else
-                aux = -1 (there's no track)
-            */
-            if(matrix[nod][nod]!=-1 && matrix[nod][dest]!=-1)
-                aux=matrix[nod][nod]+matrix[nod][dest];
-            else
-                aux=-1;
-
-            /* if aux is < min AND aux != -1
-                OR
-                min == -1
-                    min = aux
-                    originNode = nod
-             Here we're gonna save the min cost with the visited vertex
-            * */
-            if((aux<min && aux!=-1)||min==-1){
-                min=aux;
-                originNode=nod;
+            if(minCost != -1){
+                for(int i = 0; i < nodesQuantity; i++){
+                    if(matrix[queueVertex.get(0)][i] != -1 ){
+                        if( matrixAux[queueVertex.get(0)][i] == 0 ||
+                                matrixAux[queueVertex.get(0)][i] > matrix[queueVertex.get(0)][i] + minCost){
+                            matrixAux[queueVertex.get(0)][i] = matrix[queueVertex.get(0)][i] + minCost;
+                            queueVertex.add(i);
+                        }
+                    }
+                }
+            }else{
+                return "No hay camino";
             }
+            countVisitedVertex++;
+            queueVertex.remove(0);
+        }
+        if(countVisitedVertex == 1){
+            return "No hay camino";
         }
 
-        /* if there's is a min cost
-         *   ->Save in matrix[destiny][destiny] the min cost
-         *   ->Save in tracks, int destiny's track the previous visited vertex with the min cost        *
-         * */
-        if(min != -1){
-            matrix[dest][dest]=min;
-            tracks.set(dest,String.valueOf(originNode));
-        }
-        //return the min, it could be -1 or whatever the min cost is
-        return min;
-    }
-
-    private String resolve(int from, int to, String locations){
-        int nod;
-        int minimo;
-        int aux;
-        int nodCambio=0;
-        int intento;
-
-        //Unvisited vertexes
-        conjCompS.clear();
-        tracks.clear();
-        //visited vertexes
-        conjS.clear();
-        //initialize lists
-        for(int i = 0; i < nodesQuantity; i++){
-            if(i != from)
-                conjCompS.add(i);
-            else
-                conjS.add(i);
-            tracks.add("");
-        }
-
-        //diksjtra loop
-        for(int i = 0; i< nodesQuantity; i++){
-            minimo=-1;
-
-            //unvisited vertexes loop
-            for(int j=0; j<conjCompS.size() ;j++){
-                //get the unvisited vertex
-                //nod=Integer.valueOf((String)(conjComp_S.get(j))).intValue();
-                nod = (int)conjCompS.get(j);
-
-                //calculate the min cost associate to the destiny vertex
-                aux=min(nod);
-
-                /*
-                 * save aux as minimo when aux is < minimo) and nodCambio will be the unvisited vertex with the min cost
-                 * */
-                if(minimo == -1 || (aux < minimo && aux != -1)){
-                    minimo=aux;
-                    nodCambio=j;
+        //Get the path and the cost of the mininum track
+        int auxFil = to;
+        ArrayList<Integer> arrVertexReverse = new ArrayList<Integer>();
+        int totalCost = 0;
+        int minCostTrack = 100000;
+        int indexMin = 0;
+        boolean isTrack = false;
+        do{
+            //for to get the min cost of the column
+            arrVertexReverse.add(auxFil);
+            for(int f = 0; f < nodesQuantity; f++){
+                if(matrixAux[f][auxFil] < minCostTrack && matrixAux[f][auxFil] != 0){
+                    minCostTrack = matrixAux[f][auxFil];
+                    indexMin = f;
+                    isTrack = true;
+                }
+                if(auxFil == to){
+                    //save the final total cost of the to element
+                    totalCost = minCostTrack;
                 }
             }
-            /*-save the min cost if minimo is not -1
-             -add to visited vertex the unvisited vertex with the min cost
-             -remove from the unvisited vertex the unvisited vertex with the min cost*/
-            if(minimo != -1){
-                conjS.add(conjCompS.get(nodCambio));
-                conjCompS.remove(nodCambio);
+            if(!isTrack){
+                return "No hay camino";
             }
-        }
-
-        //after visit all the vertex
-
-        //get min track
-        //for for set the tracks from the origin vertex to any vertex
-        for(int k = 0; k< tracks.size(); k++) {
-            /*if k is not the actual vertex:
-             *   tmp = previous vertex + to itself
-             *   and in tracks set in the itself index the tmp(path)
-             * */
-            if (k != from) {
-                tmp = tracks.get(k) + String.valueOf(k);
-                //tmp = (String) (tracks.get(k)) + (char) (k + 65);
-                tracks.set(k, tmp);
+            //get the fil element to search it's min cost in colum
+            auxFil = indexMin;
+            if(auxFil == from){
+                arrVertexReverse.add(auxFil);
             }
-        }
+        }while(auxFil != from);
+        return getStringResolve(arrVertexReverse, totalCost, locaciones);
 
-        /*iterate tracks elements
-         * */
-        for(int j = 0; j< tracks.size(); j++) {
-            /*if j is not the origin vertex:
-             *   tmp = get the itself track
-             *
-             * */
-            if (j != from) {
-                intento = 0;
-                tmp = (String) (tracks.get(j));
-
-                // while the first element of the track is not the origin vertex and try is < 10
-                while (Character.getNumericValue(tmp.charAt(0)) != from && intento < 10) {
-                    //get the index of the first element of the track
-                    aux = Character.getNumericValue(tmp.charAt(0));
-                    //get entire track: concat track of the index element and the index of the last element of the track
-
-                    tmp = tracks.get(aux) + tmp.substring(1);
-                    if (++intento == 10)
-                        tmp = "*".concat(tmp);
-                }
-
-                if (Character.getNumericValue(tmp.charAt(tmp.length() - 1)) == to && tmp.charAt(0) != '*') {
-                    return toStringMinCost(tmp, j, to, locations);
-                }
-
-            }
-        }
-
-        return "No hay camino";
     }
 
-    private String toStringMinCost(String cam, int from, int to, String locations){
-        String[] locationsNames = locations.split(",");
-        String result = "\nCamino y costo mínimo desde "+locationsNames[Character.getNumericValue(cam.charAt(0))]+" hasta "
-                + locationsNames[to]+" es: \n";
+    public int calculateMinCostColumVertex(int[][] matrixAux, int countVisitedVertex, int vertex){
+        int minCost = 100000;
+        if(countVisitedVertex != 0){
+            for(int f = 0; f < nodesQuantity; f++){
+                if(matrixAux[f][vertex] < minCost
+                        && matrixAux[f][vertex] != 0 ){
+                    minCost = matrixAux[f][vertex];
+                }
+            }
+            if(minCost == 100000){
+                return -1;
+            }
+            return minCost;
+        }else{
+            return 0;
+        }
+    }
 
-        for(int i=0;i<cam.length();i++) {
+    public String getStringResolve(ArrayList<Integer> pathReverse, int totalCost, String locationString){
+        String[] locationsNames = locationString.split(",");
+        String result = "\nCamino y costo mínimo desde "+locationsNames[pathReverse.get(pathReverse.size()-1)]+" hasta "
+                + locationsNames[pathReverse.get(0)]+" es: \n";
+        for(int i= pathReverse.size()-1; i >= 0 ;i--) {
             result += "" +
-                    locationsNames[Character.getNumericValue(cam.charAt(i))] + (i == cam.length() - 1 ? "" : "->");
+                    locationsNames[pathReverse.get(i)] + (i == 0 ? "" : "->");
         }
-        result +=" costo: "+matrix[from][from];
+        result +=" costo: " +totalCost;
         return result;
+    }
+
+    public void printMatrizAux(int[][] matrix){
+        for(int f = 0; f < nodesQuantity; f++){
+            for(int c = 0; c < nodesQuantity; c++){
+                System.out.print(matrix[f][c] +"   ");
+            }
+            System.out.println("");
+        }
     }
 
 }

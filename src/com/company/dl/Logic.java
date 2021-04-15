@@ -3,6 +3,7 @@ package com.company.dl;
 import com.company.bl.HashTable;
 import com.company.bl.LocationNode;
 import com.company.bl.Matrix;
+import com.company.bl.MultipleList;
 
 import java.io.IOException;
 
@@ -12,6 +13,8 @@ public class Logic {
     private LocationNode[] locations;
     private Matrix matrix;
     private String locationsNames;
+    private MultipleList multipleList;
+
     public Logic() throws IOException {
         //Initialize locations array
         this.locations = new LocationNode[25];
@@ -25,11 +28,15 @@ public class Logic {
         InitializeHash();
         //Initialize matrix
 
+
         try{
             this.matrix = new Matrix();
         }catch (Exception e){
             throw e;
         }
+        this.multipleList = new MultipleList(this.locationsNames);
+        initializeMultipleList();
+        initializeArchVertex();
     }
 
     private void InitializeHash() {
@@ -58,5 +65,27 @@ public class Logic {
 
     public String printLocation(int i) {
         return this.hashTable.search(i);
+    }
+
+    public void initializeMultipleList(){
+        for (int i = 0; i < 25; i++) {
+            multipleList.addVertex(i);
+        }
+    }
+
+    public void initializeArchVertex(){
+        int[][] auxMatrix = this.matrix.getMatrix();
+        for (int i = 0; i < 25; i++) {
+            for (int j = 0; j < 25; j++) {
+                if (auxMatrix[i][j]!= -1){
+                    multipleList.addArchVertex(i,j,auxMatrix[i][j]);
+                }
+            }
+        }
+    }
+
+    public String getAdyLocations(int id){
+        return this.multipleList.showAdyLocations(id);
+
     }
 }

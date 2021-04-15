@@ -34,6 +34,7 @@ public class Main {
                     "Menu - Choose an option\n" +
                     "1- Calculate minimum cost\n" +
                     "2- Search location\n" +
+                    "3- Show adjacent locations for a single location\n" +
                     "0- Exit");
 
             option = Integer.parseInt(in.readLine());
@@ -51,10 +52,21 @@ public class Main {
             case 2:
                 searchLocation();
                 break;
+            case 3:
+                showAdyLocation();
             case 0:
                 print("Thank you for using our software");
                 break;
         }
+    }
+
+    private static void showAdyLocation() throws IOException {
+        int id;
+        locationsMenu();
+        print("*********************************************\n");
+        print("Write the country's code:");
+        id = Integer.parseInt(in.readLine());
+        print(controller.getAdyLocation(id));
     }
 
     public static void minimunCost() throws IOException{

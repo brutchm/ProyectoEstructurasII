@@ -26,4 +26,10 @@ public class Controller {
     public String printLocation(int i) {
         return this.logic.printLocation(i);
     }
+
+    public String getAdyLocation(int id){
+        return this.logic.getAdyLocations(id);
+
+
+        }
 }
